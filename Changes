@@ -1,0 +1,6 @@
+Revision history for Perl extension Sub::Override.
+
+0.01  Mon May 24 09:44:31 2004
+	- original version; created by h2xs 1.23 with options
+		-AX -n Sub::Override
+
