@@ -1,8 +1,9 @@
 #!/usr/local/bin/perl -w
 use strict;
 #use Test::More 'no_plan';
-use Test::More tests => 23;
+use Test::More tests => 24;
 use Test::Exception;
+use Data::Dumper::Simple;
 
 my $CLASS;
 
@@ -92,9 +93,14 @@ is(Foo::bar(), 'original value',
 {
     package Temp;
     sub foo { 23 }
+    sub bar { 42 }
 
     my $override = Sub::Override->new('foo', sub { 42 });
+    $override->replace('bar', sub { 'barbar' });
     main::is(foo(), 42, 'Not fully qualifying a sub name will assume the current package');
-    $override->restore;
+    $override->restore('foo');
     main::is(foo(), 23, '... and we should be able to restore said sub');
+
+    $override->restore('Temp::bar');
+    main::is(bar(), 42, '... even if we use a full qualified sub name');
 }

@@ -3,7 +3,7 @@ package Sub::Override;
 use strict;
 use warnings;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 my $_croak = sub {
     local *__ANON__ = '__ANON__croak';
@@ -38,12 +38,26 @@ sub new {
     return $self;
 }
 
+my $_normalize_sub_name = sub {
+    my ($self, $subname) = @_;
+    if (($subname || '') =~ /^\w+$/) { # || "" for suppressing test warnings
+        my $package = do {
+            my $call_level = 0;
+            my $this_package;
+            while (! $this_package || __PACKAGE__ eq $this_package) {
+                ($this_package) = caller($call_level);
+                $call_level++;
+            }
+            $this_package;
+        };
+        $subname = "${package}::$subname";
+    }
+    return $subname;
+};
+
 sub replace {
     my ($self, $sub_to_replace, $new_sub) = @_;
-    if ($sub_to_replace =~ /^\w+$/) {
-        my ($package) = caller(1);
-        $sub_to_replace = "${package}::$sub_to_replace";
-    }
+    $sub_to_replace = $self->$_normalize_sub_name($sub_to_replace);
     $self->$_validate_code_slot($sub_to_replace)
          ->$_validate_sub_ref($new_sub);
     {
@@ -57,6 +71,7 @@ sub replace {
 
 sub restore {
     my ($self, $name_of_sub) = @_;
+    $name_of_sub = $self->$_normalize_sub_name($name_of_sub);
     if (! $name_of_sub && 1 == keys %$self) {
         ($name_of_sub) = keys %$self;
     }
