@@ -1,5 +1,8 @@
 Revision history for Perl extension Sub::Override.
 
+0.05  Tue Aug 24 2004
+    - Removed accidental dependency on Data::Dumper::Simple
+      
 0.04  Mon Aug 23 2004
     - Fixed bug where explicitly restoring subs whose names were
       not fully qualified would fail.

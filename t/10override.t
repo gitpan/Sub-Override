@@ -3,7 +3,6 @@ use strict;
 #use Test::More 'no_plan';
 use Test::More tests => 24;
 use Test::Exception;
-use Data::Dumper::Simple;
 
 my $CLASS;
 

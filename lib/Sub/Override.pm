@@ -3,7 +3,7 @@ package Sub::Override;
 use strict;
 use warnings;
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 my $_croak = sub {
     local *__ANON__ = '__ANON__croak';
@@ -31,14 +31,9 @@ my $_validate_sub_ref = sub {
     return $self;
 };
 
-sub new {
-    my $class = shift;
-    my $self = bless {}, $class;
-    $self->replace(@_) if @_;
-    return $self;
-}
 
 my $_normalize_sub_name = sub {
+    local *__ANON__ = '__ANON__normalize_sub_name';
     my ($self, $subname) = @_;
     if (($subname || '') =~ /^\w+$/) { # || "" for suppressing test warnings
         my $package = do {
@@ -54,6 +49,13 @@ my $_normalize_sub_name = sub {
     }
     return $subname;
 };
+
+sub new {
+    my $class = shift;
+    my $self = bless {}, $class;
+    $self->replace(@_) if @_;
+    return $self;
+}
 
 sub replace {
     my ($self, $sub_to_replace, $new_sub) = @_;
