@@ -1,7 +1,7 @@
 #!/usr/local/bin/perl -w
 use strict;
-#use Test::More 'no_plan';
-use Test::More tests => 24;
+use Test::More 'no_plan';
+#use Test::More tests => 24;
 use Test::Exception;
 
 my $CLASS;
@@ -45,6 +45,11 @@ ok($override->replace('Foo::bar', sub { 'new subroutine' }),
 is(Foo::bar(), 'new subroutine', 
     '... and the subroutine should exhibit the new behavior');
 
+ok($override->replace('Foo::bar' => sub { 'new subroutine 2' }),
+    '... and we should be able to replace a sub more than once');
+is(Foo::bar(), 'new subroutine 2', 
+    '... and still have the sub exhibit the new behavior');
+
 can_ok($override, 'restore');
 
 throws_ok { $override->restore('Did::Not::Override') }
@@ -70,8 +75,6 @@ throws_ok { $override->restore('Foo::bar') }
 is(Foo::bar(), 'original value', 
     '... but should revert to the original behavior when the object falls out of scope');
 
-is(Foo::bar(), 'original value', 
-    '... but should revert to the original behavior when the object falls out of scope');
 {
     my $new_override = $CLASS->new('Foo::bar', sub { 'lexical value' });
     ok($new_override, 'We should be able to override a sub from the constructor');

@@ -1,5 +1,10 @@
 Revision history for Perl extension Sub::Override.
 
+0.06  Fri Dec  3 2003
+    - Ensure that restore() always restores the sub to its
+      original state.  This allows a subroutine to be safely
+      overridden multiple times.
+
 0.05  Tue Aug 24 2004
     - Removed accidental dependency on Data::Dumper::Simple
       

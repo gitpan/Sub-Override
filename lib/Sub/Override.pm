@@ -3,7 +3,7 @@ package Sub::Override;
 use strict;
 use warnings;
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 my $_croak = sub {
     local *__ANON__ = '__ANON__croak';
@@ -64,7 +64,7 @@ sub replace {
          ->$_validate_sub_ref($new_sub);
     {
         no strict 'refs';
-        $self->{$sub_to_replace} = *$sub_to_replace{CODE};
+        $self->{$sub_to_replace} ||= *$sub_to_replace{CODE};
         no warnings 'redefine';
         *$sub_to_replace = $new_sub;
     }
@@ -164,11 +164,25 @@ replace and to supply a sub to replace it with.
 
 You can replace multiple subroutines, if needed:
 
+  $override->replace('Some::sub1', sub { 'new data1' });
+  $override->replace('Some::sub2', sub { 'new data2' });
+  $override->replace('Some::sub3', sub { 'new data3' });
+
+If replacing the subroutine succeeds, the object is returned.  This allows the
+programmer to chain the calls, if this style of programming is preferred:
+
   $override->replace('Some::sub1', sub { 'new data1' })
            ->replace('Some::sub2', sub { 'new data2' })
            ->replace('Some::sub3', sub { 'new data3' });
 
-(Chaining calls is not required)
+A subroutine may be replaced as many times as desired.  This is most useful
+when testing how code behaves with multiple conditions.
+
+  $override->replace('Some::thing', sub { 0 });
+  is($object->foo, 'wibble', 'wibble is returned if Some::thing is false');
+
+  $override->replace('Some::thing', sub { 1 });
+  is($object->foo, 'puppies', 'puppies are returned if Some::thing is true');
 
 =head2 Restoring subroutines
 
@@ -191,7 +205,14 @@ will have to explicitly name the subroutine you wish to restore:
 
   $override->restore('This::sub');
 
-Failure to fully qualify the subroutine name will assume the current package.
+Note C<restore()> will always restore the original behavior of the subroutine
+no matter how many times you have overridden it.
+
+=head2 Which package is the subroutine in?
+
+Ordinarily, you want to fully qualify the subroutine by including the package
+name.  However, failure to fully qualify the subroutine name will assume the
+current package.
 
   package Foo;
   use Sub::Override;
