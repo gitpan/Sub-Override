@@ -1,7 +1,7 @@
 #!/usr/local/bin/perl -w
 use strict;
-use Test::More 'no_plan';
-#use Test::More tests => 24;
+#use Test::More 'no_plan';
+use Test::More tests => 28;
 use Test::Exception;
 
 my $CLASS;
@@ -49,6 +49,12 @@ ok($override->replace('Foo::bar' => sub { 'new subroutine 2' }),
     '... and we should be able to replace a sub more than once');
 is(Foo::bar(), 'new subroutine 2', 
     '... and still have the sub exhibit the new behavior');
+
+can_ok($override, 'override');
+ok($override->override('Foo::bar' => sub { 'new subroutine 3' }),
+    '... and it should also replace a subroutine');
+is(Foo::bar(), 'new subroutine 3', 
+    '... and act just like replace()');
 
 can_ok($override, 'restore');
 

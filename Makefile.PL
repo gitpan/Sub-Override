@@ -7,7 +7,8 @@ WriteMakefile(
     VERSION_FROM      => 'lib/Sub/Override.pm', # finds $VERSION
     PREREQ_PM         => {
         'Test::More'      => .47,
-        'Test::Exception' => .15
+        'Test::Exception' => .21,
+        'Sub::Uplevel'    => 0, # because I'm sick of bogus test failures
     },
     ($] >= 5.005 ?
       (ABSTRACT_FROM  => 'lib/Sub/Override.pm',

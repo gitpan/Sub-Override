@@ -3,7 +3,7 @@ package Sub::Override;
 use strict;
 use warnings;
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 my $_croak = sub {
     local *__ANON__ = '__ANON__croak';
@@ -57,6 +57,8 @@ sub new {
     return $self;
 }
 
+# because I should have done that in the first place
+*override = *replace{CODE};
 sub replace {
     my ($self, $sub_to_replace, $new_sub) = @_;
     $sub_to_replace = $self->$_normalize_sub_name($sub_to_replace);
@@ -222,6 +224,46 @@ current package.
   $override->restore;
   print foo(); # prints 23
 
+=head1 METHODS
+
+=head2 new
+
+  my $sub = Sub::Override->new;
+  my $sub = Sub::Override->new($sub_name, $sub_ref);
+
+Creates a new C<Sub::Override> instance.  Optionally, you may override a 
+subroutine while creating a new object.
+
+=head2 replace
+
+ $sub->replace($sub_name, $sub_body);
+
+Temporarily replaces a subroutine with another subroutine.  Returns the
+instance, so chaining the method is allowed:
+
+ $sub->replace($sub_name, $sub_body)
+     ->replace($another_sub, $another_body);
+
+This method will C<croak> is the subroutine to be replaced does not exist.
+
+=head2 override
+
+ my $sub = Sub::Override->new;
+ $sub->override($sub_name, $sub_body);
+
+C<override> is an alternate name for C<replace>.  They are the same method.
+
+=cut
+
+=head2 restore
+
+ $sub->restore($sub_name);
+
+Restores the previous behavior of the subroutine.  This will happen
+automatically if the C<Sub::Override> object falls out of scope.
+
+=cut
+
 =head1 EXPORT
 
 None by default.
@@ -244,13 +286,13 @@ Test::MockObject -- use this if you need to alter an entire class
 
 =head1 AUTHOR
 
-Curtis "Ovid" Poe, E<lt>eop_divo_sitruc@yahoo.comE<gt>
+Curtis "Ovid" Poe, C<< <ovid [at] cpan [dot] org> >>
 
 Reverse the name to email me.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2004 by Curtis "Ovid" Poe
+Copyright (C) 2004-2005 by Curtis "Ovid" Poe
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.2 or,
