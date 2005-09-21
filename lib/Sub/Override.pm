@@ -3,20 +3,20 @@ package Sub::Override;
 use strict;
 use warnings;
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 my $_croak = sub {
     local *__ANON__ = '__ANON__croak';
-    my ($proto, $message) = @_;
+    my ( $proto, $message ) = @_;
     require Carp;
     Carp::croak($message);
 };
 
 my $_validate_code_slot = sub {
     local *__ANON__ = '__ANON__validate_code_slot';
-    my ($self, $code_slot) = @_;
+    my ( $self, $code_slot ) = @_;
     no strict 'refs';
-    unless (defined *{$code_slot}{CODE}) {
+    unless ( defined *{$code_slot}{CODE} ) {
         $self->$_croak("Cannot replace non-existent sub ($code_slot)");
     }
     return $self;
@@ -24,22 +24,21 @@ my $_validate_code_slot = sub {
 
 my $_validate_sub_ref = sub {
     local *__ANON__ = '__ANON__validate_sub_ref';
-    my ($self, $sub_ref) = @_;
-    unless ('CODE' eq ref $sub_ref) {
+    my ( $self, $sub_ref ) = @_;
+    unless ( 'CODE' eq ref $sub_ref ) {
         $self->$_croak("($sub_ref) must be a code reference");
-    }   
+    }
     return $self;
 };
 
-
 my $_normalize_sub_name = sub {
     local *__ANON__ = '__ANON__normalize_sub_name';
-    my ($self, $subname) = @_;
-    if (($subname || '') =~ /^\w+$/) { # || "" for suppressing test warnings
+    my ( $self, $subname ) = @_;
+    if ( ( $subname || '' ) =~ /^\w+$/ ) { # || "" for suppressing test warnings
         my $package = do {
             my $call_level = 0;
             my $this_package;
-            while (! $this_package || __PACKAGE__ eq $this_package) {
+            while ( !$this_package || __PACKAGE__ eq $this_package ) {
                 ($this_package) = caller($call_level);
                 $call_level++;
             }
@@ -57,13 +56,14 @@ sub new {
     return $self;
 }
 
-# because I should have done that in the first place
+# because override() was a better name and this is what it should have been
+# called.
 *override = *replace{CODE};
+
 sub replace {
-    my ($self, $sub_to_replace, $new_sub) = @_;
+    my ( $self, $sub_to_replace, $new_sub ) = @_;
     $sub_to_replace = $self->$_normalize_sub_name($sub_to_replace);
-    $self->$_validate_code_slot($sub_to_replace)
-         ->$_validate_sub_ref($new_sub);
+    $self->$_validate_code_slot($sub_to_replace)->$_validate_sub_ref($new_sub);
     {
         no strict 'refs';
         $self->{$sub_to_replace} ||= *$sub_to_replace{CODE};
@@ -74,17 +74,17 @@ sub replace {
 }
 
 sub restore {
-    my ($self, $name_of_sub) = @_;
+    my ( $self, $name_of_sub ) = @_;
     $name_of_sub = $self->$_normalize_sub_name($name_of_sub);
-    if (! $name_of_sub && 1 == keys %$self) {
+    if ( !$name_of_sub && 1 == keys %$self ) {
         ($name_of_sub) = keys %$self;
     }
     $self->$_croak(
-        sprintf 'You must provide the name of a sub to restore: (%s)' =>
-            join ', ' => sort keys %$self
-    ) unless $name_of_sub;
+        sprintf 'You must provide the name of a sub to restore: (%s)' => join
+          ', ' => sort keys %$self )
+      unless $name_of_sub;
     $self->$_croak("Cannot restore a sub that was not replaced ($name_of_sub)")
-        unless exists $self->{$name_of_sub};
+      unless exists $self->{$name_of_sub};
     no strict 'refs';
     no warnings 'redefine';
     *$name_of_sub = delete $self->{$name_of_sub};
@@ -95,7 +95,7 @@ sub DESTROY {
     my $self = shift;
     no strict 'refs';
     no warnings 'redefine';
-    while (my ($sub_name, $sub_ref) = each %$self) {
+    while ( my ( $sub_name, $sub_ref ) = each %$self ) {
         *$sub_name = $sub_ref;
     }
 }
